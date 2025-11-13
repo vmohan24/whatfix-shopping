@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { AppDispatch, fetchCartAsync } from '../store/store';
 import Header from './Header';
 import LeftNav from './LeftNav';
 import MainContainer from './MainContainer';
@@ -8,17 +10,22 @@ import { DashboardConfig } from '../types/config';
 import './Dashboard.css';
 
 const Dashboard = () => {
+  const dispatch = useDispatch<AppDispatch>();
   const [config, setConfig] = useState<DashboardConfig | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
 
   useEffect(() => {
-    const loadConfig = async () => {
+    const loadConfigAndCart = async () => {
       try {
         setLoading(true);
-        const dashboardConfig = await fetchDashboardConfig();
-        setConfig(dashboardConfig);
+        await Promise.all([
+          fetchDashboardConfig().then(setConfig),
+          dispatch(fetchCartAsync()).unwrap().catch(err => {
+            console.error('Failed to fetch cart:', err);
+          })
+        ]);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An unknown error occurred');
       } finally {
@@ -26,8 +33,8 @@ const Dashboard = () => {
       }
     };
 
-    loadConfig();
-  }, []);
+    loadConfigAndCart();
+  }, [dispatch]);
 
   if (loading) {
     return (

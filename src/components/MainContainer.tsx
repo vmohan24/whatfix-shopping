@@ -7,9 +7,9 @@ import './MainContainer.css';
 // Lazy load module components (these would be micro-frontends in production)
 const ProductCategory = lazy(() => import('product_category_app/ProductCategory'));
 const ProductDetail = lazy(() => import('product_category_app/ProductDetail'));
+const Cart = lazy(() => import('cart_app/Cart'));
 
 const Profile = lazy(() => import('../modules/Profile'));
-const Cart = lazy(() => import('../modules/Cart'));
 const Orders = lazy(() => import('../modules/Orders'));
 const Checkout = lazy(() => import('../modules/Checkout'));
 const Payment = lazy(() => import('../modules/Payment'));

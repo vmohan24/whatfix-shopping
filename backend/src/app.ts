@@ -2,6 +2,7 @@ import express, { Application } from 'express';
 import cors from 'cors';
 import configRoutes from './routes/configRoutes';
 import productRoutes from './routes/productRoutes';
+import cartRoutes from './routes/cartRoutes';
 import { userMiddleware } from './middleware/userMiddleware';
 
 /**
@@ -18,6 +19,7 @@ app.use(userMiddleware); // Extract and log userId from query parameters
 // Routes
 app.use('/api', configRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/cart', cartRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

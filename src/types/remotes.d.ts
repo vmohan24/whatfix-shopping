@@ -10,6 +10,12 @@ declare module 'product_category_app/ProductDetail' {
   export default ProductDetail;
 }
 
+declare module 'cart_app/Cart' {
+  import { ComponentType } from 'react';
+  const Cart: ComponentType;
+  export default Cart;
+}
+
 declare module 'shopping_dashboard/store' {
   export * from '../store/store';
 }

@@ -29,7 +29,7 @@ export class ProductModel {
     ],
     electronics: [
       { id: 101, name: 'Wireless Headphones', price: 129.99, image: '🎧', category: 'Audio', subCategory: 'Headphones' },
-      { id: 102, name: 'Smart TV 55"', price: 599.99, image: '📺', category: 'TV', subCategory: 'Smart TVs' },
+      { id: 102, name: 'Smart TV 55"', price: 599.99, image: '📺', category: 'TV', subCategory: 'Smart-TVs' },
       { id: 103, name: 'Laptop Stand', price: 39.99, image: '💻', category: 'Accessories', subCategory: 'Stands' },
       { id: 104, name: 'Mechanical Keyboard', price: 89.99, image: '⌨️', category: 'Accessories', subCategory: 'Keyboards' },
       { id: 105, name: 'Gaming Mouse', price: 59.99, image: '🖱️', category: 'Accessories', subCategory: 'Mice' },

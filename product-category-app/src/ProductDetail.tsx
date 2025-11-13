@@ -1,46 +1,39 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState, AppDispatch, addToCartAsync, updateCartItemAsync, fetchCartAsync } from 'shopping_dashboard/store';
 import './Module.css';
 import { Product } from './products';
 import { fetchProductById } from './api';
 
-interface CartItem {
-  product: Product;
-  quantity: number;
-}
-
-const getCart = (): CartItem[] => {
-  const cartData = localStorage.getItem('shopping_cart');
-  return cartData ? JSON.parse(cartData) : [];
-};
-
-const saveCart = (cart: CartItem[]) => {
-  localStorage.setItem('shopping_cart', JSON.stringify(cart));
-};
-
-const addToCart = (product: Product, quantity: number) => {
-  const cart = getCart();
-  const existingItemIndex = cart.findIndex(item => item.product.id === product.id);
-  
-  if (existingItemIndex >= 0) {
-    cart[existingItemIndex].quantity += quantity;
-  } else {
-    cart.push({ product, quantity });
-  }
-  
-  saveCart(cart);
-};
-
 const ProductDetail = () => {
   const { category, productId, subCategory } = useParams<{ category: string; productId?: string; subCategory?: string }>();
-  // Use productId if available, otherwise use subCategory (when it's numeric)
   const actualProductId = productId || subCategory;
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+  const cartItems = useSelector((state: RootState) => state.cart.items);
+  
   const [product, setProduct] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [addedToCart, setAddedToCart] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [cartQuantity, setCartQuantity] = useState(0);
+
+  useEffect(() => {
+    dispatch(fetchCartAsync());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (product) {
+      const cartItem = cartItems.find((item: { product: { id: number }; quantity: number }) => item.product.id === product.id);
+      const currentCartQuantity = cartItem?.quantity ?? 0;
+      setCartQuantity(currentCartQuantity);
+      if (currentCartQuantity > 0) {
+        setQuantity(1);
+      }
+    }
+  }, [product, cartItems]);
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -77,11 +70,32 @@ const ProductDetail = () => {
     setQuantity(prev => (prev > 1 ? prev - 1 : 1));
   };
 
-  const handleAddToCart = () => {
-    if (product) {
-      addToCart(product, quantity);
+  const handleAddToCart = async () => {
+    if (!product) return;
+
+    try {
+      const productIdNum = parseInt(actualProductId || '', 10);
+      if (isNaN(productIdNum)) {
+        throw new Error('Invalid product ID');
+      }
+
+      if (cartQuantity > 0) {
+        await dispatch(updateCartItemAsync({ 
+          productId: productIdNum, 
+          quantity: cartQuantity + quantity 
+        }));
+      } else {
+        await dispatch(addToCartAsync({ 
+          productId: productIdNum, 
+          quantity 
+        }));
+      }
+
       setAddedToCart(true);
       setTimeout(() => setAddedToCart(false), 2000);
+      dispatch(fetchCartAsync());
+    } catch (error) {
+      console.error('Error adding to cart:', error);
     }
   };
 
@@ -144,8 +158,14 @@ const ProductDetail = () => {
             </p>
           </div>
 
+          {cartQuantity > 0 && (
+            <div className="pdp-cart-info">
+              <p>Currently in cart: {cartQuantity} {cartQuantity === 1 ? 'item' : 'items'}</p>
+            </div>
+          )}
+
           <div className="pdp-quantity-section">
-            <label htmlFor="quantity">Quantity:</label>
+            <label htmlFor="quantity">Quantity to {cartQuantity > 0 ? 'add' : ''}:</label>
             <div className="quantity-controls">
               <button 
                 onClick={handleDecreaseQuantity} 
@@ -176,13 +196,18 @@ const ProductDetail = () => {
 
           <div className="pdp-total">
             <p>Total: <strong>${(product.price * quantity).toFixed(2)}</strong></p>
+            {cartQuantity > 0 && (
+              <p className="pdp-total-cart">
+                New total in cart: <strong>${(product.price * (cartQuantity + quantity)).toFixed(2)}</strong>
+              </p>
+            )}
           </div>
 
           <button 
             onClick={handleAddToCart} 
             className="add-to-cart-button"
           >
-            {addedToCart ? '✓ Added to Cart!' : 'Add to Cart'}
+            {addedToCart ? '✓ Added to Cart!' : cartQuantity > 0 ? `Add ${quantity} More to Cart` : 'Add to Cart'}
           </button>
         </div>
       </div>

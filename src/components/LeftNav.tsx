@@ -1,4 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { RootState } from '../store/store';
 import { NavConfig } from '../types/config';
 import './LeftNav.css';
 
@@ -10,16 +12,12 @@ interface LeftNavProps {
 
 const LeftNav = ({ leftNavConfig, isMobileMenuOpen, onCloseMenu }: LeftNavProps) => {
   const location = useLocation();
+  const cartItems = useSelector((state: RootState) => state.cart.items);
+  const cartItemCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
   if (!leftNavConfig) {
     return null;
   }
-
-  const handleLinkClick = () => {
-    if (onCloseMenu) {
-      onCloseMenu();
-    }
-  };
 
   return (
     <aside className={`left-nav ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
@@ -29,9 +27,12 @@ const LeftNav = ({ leftNavConfig, isMobileMenuOpen, onCloseMenu }: LeftNavProps)
             key={key}
             to={config.path}
             className={`left-nav-item ${location.pathname === config.path ? 'active' : ''}`}
-            onClick={handleLinkClick}
+            onClick={onCloseMenu}
           >
-            {config.title}
+            <span className="left-nav-item-title">{config.title}</span>
+            {key === 'cart' && cartItemCount > 0 && (
+              <span className="left-nav-cart-badge">{cartItemCount}</span>
+            )}
           </Link>
         ))}
       </nav>

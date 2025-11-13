@@ -53,6 +53,7 @@ module.exports = (env, argv) => ({
       },
       remotes: {
         product_category_app: 'product_category_app@http://localhost:3001/remoteEntry.js',
+        cart_app: 'cart_app@http://localhost:3002/remoteEntry.js',
       },
       shared: {
         react: { 

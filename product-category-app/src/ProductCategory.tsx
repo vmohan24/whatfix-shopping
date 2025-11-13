@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState, AppDispatch, updateCartItemAsync, removeFromCartAsync, fetchCartAsync, addToCartAsync } from 'shopping_dashboard/store';
 import './Module.css';
 import { Product } from './products';
 import { fetchProductsByCategory, fetchProductsByCategoryAndSubCategory } from './api';
@@ -35,6 +37,8 @@ const getCategoryPlaceholder = (category?: string): string => {
 
 const ProductCategory = ({ category: categoryProp }: ProductCategoryProps) => {
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+  const cartItems = useSelector((state: RootState) => state.cart.items);
   const { category: categoryParam, subCategory: subCategoryParam } = useParams<{ category?: string; subCategory?: string }>();
   const category = categoryParam || categoryProp || '';
   const subCategory = subCategoryParam || '';
@@ -43,6 +47,11 @@ const ProductCategory = ({ category: categoryProp }: ProductCategoryProps) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Fetch cart on mount
+  useEffect(() => {
+    dispatch(fetchCartAsync());
+  }, [dispatch]);
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -84,6 +93,38 @@ const ProductCategory = ({ category: categoryProp }: ProductCategoryProps) => {
 
   const handleProductClick = (productId: number) => {
     navigate(`/shopping/${category}/${productId}`);
+  };
+
+  const handleQuantityChange = async (e: React.MouseEvent, productId: number, currentQuantity: number, delta: number) => {
+    e.stopPropagation(); // Prevent card click navigation
+    const newQuantity = currentQuantity + delta;
+    
+    if (newQuantity <= 0) {
+      await dispatch(removeFromCartAsync(productId));
+    } else {
+      await dispatch(updateCartItemAsync({ productId, quantity: newQuantity }));
+    }
+  };
+
+  const handleQuantityInputChange = async (e: React.ChangeEvent<HTMLInputElement>, productId: number) => {
+    e.stopPropagation(); // Prevent card click navigation
+    const val = parseInt(e.target.value) || 0;
+    
+    if (val <= 0) {
+      await dispatch(removeFromCartAsync(productId));
+    } else {
+      await dispatch(updateCartItemAsync({ productId, quantity: val }));
+    }
+  };
+
+  const handleAddToCart = async (e: React.MouseEvent, productId: number) => {
+    e.stopPropagation(); // Prevent card click navigation
+    await dispatch(addToCartAsync({ productId, quantity: 1 }));
+  };
+
+  const getCartQuantity = (productId: number): number => {
+    const cartItem = cartItems.find((item: { product: { id: number }; quantity: number }) => item.product.id === productId);
+    return cartItem?.quantity ?? 0;
   };
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -141,20 +182,62 @@ const ProductCategory = ({ category: categoryProp }: ProductCategoryProps) => {
       <div className="products-container">
         {filteredProducts.length > 0 ? (
           <div className="products-grid">
-            {filteredProducts.map((product) => (
-              <div 
-                key={product.id} 
-                className="product-card"
-                onClick={() => handleProductClick(product.id)}
-              >
-                <div className="product-image">{product.image}</div>
-                <div className="product-info">
-                  <h3 className="product-name">{product.name}</h3>
-                  <p className="product-category">{product.category}</p>
-                  <p className="product-price">${product.price.toFixed(2)}</p>
+            {filteredProducts.map((product) => {
+              const cartQuantity = getCartQuantity(product.id);
+              const isInCart = cartQuantity > 0;
+              
+              return (
+                <div 
+                  key={product.id} 
+                  className="product-card"
+                  onClick={() => handleProductClick(product.id)}
+                >
+                  <div className="product-image">{product.image}</div>
+                  <div className="product-info">
+                    <h3 className="product-name">{product.name}</h3>
+                    <p className="product-category">{product.category}</p>
+                    <p className="product-price">${product.price.toFixed(2)}</p>
+                    
+                    {isInCart ? (
+                      <div className="product-cart-controls" onClick={(e) => e.stopPropagation()}>
+                        <span className="product-cart-label">In cart:</span>
+                        <div className="product-quantity-controls">
+                          <button
+                            onClick={(e) => handleQuantityChange(e, product.id, cartQuantity, -1)}
+                            className="product-quantity-button"
+                            aria-label="Decrease quantity"
+                          >
+                            −
+                          </button>
+                          <input
+                            type="number"
+                            min="0"
+                            value={cartQuantity}
+                            onChange={(e) => handleQuantityInputChange(e, product.id)}
+                            className="product-quantity-input"
+                            aria-label="Quantity"
+                          />
+                          <button
+                            onClick={(e) => handleQuantityChange(e, product.id, cartQuantity, 1)}
+                            className="product-quantity-button"
+                            aria-label="Increase quantity"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        className="product-add-to-cart-button"
+                        onClick={(e) => handleAddToCart(e, product.id)}
+                      >
+                        Add to Cart
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="no-results">
