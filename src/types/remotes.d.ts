@@ -22,6 +22,12 @@ declare module 'checkout_app/Checkout' {
   export default Checkout;
 }
 
+declare module 'orders_app/Orders' {
+  import { ComponentType } from 'react';
+  const Orders: ComponentType;
+  export default Orders;
+}
+
 declare module 'shopping_dashboard/store' {
   export * from '../store/store';
 }

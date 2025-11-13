@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch, CartItem, fetchCartAsync, clearCart } from 'shopping_dashboard/store';
+import { createOrderAPI } from './api';
 import './Checkout.css';
 
 const Checkout = () => {
@@ -29,6 +30,8 @@ const Checkout = () => {
   });
 
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [orderError, setOrderError] = useState<string | null>(null);
 
   // Fetch cart from backend on mount
   useEffect(() => {
@@ -57,7 +60,7 @@ const Checkout = () => {
     setPaymentInfo(prev => ({ ...prev, [name]: value }));
   };
 
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
     // Validate shipping info
     if (!shippingInfo.fullName || !shippingInfo.address || !shippingInfo.city || 
         !shippingInfo.state || !shippingInfo.zipCode) {
@@ -72,14 +75,26 @@ const Checkout = () => {
       return;
     }
 
-    // Simulate order placement
-    setOrderPlaced(true);
-    dispatch(clearCart());
-    
-    // Redirect to orders after 2 seconds
-    setTimeout(() => {
-      navigate('/orders');
-    }, 2000);
+    setIsPlacingOrder(true);
+    setOrderError(null);
+
+    try {
+      // Create order in backend
+      await createOrderAPI(shippingInfo, paymentInfo);
+      
+      // Clear cart after successful order creation
+      dispatch(clearCart());
+      setOrderPlaced(true);
+      
+      // Redirect to orders after 2 seconds
+      setTimeout(() => {
+        navigate('/orders');
+      }, 2000);
+    } catch (error) {
+      console.error('Failed to place order:', error);
+      setOrderError(error instanceof Error ? error.message : 'Failed to place order. Please try again.');
+      setIsPlacingOrder(false);
+    }
   };
 
   if (loading) {
@@ -320,11 +335,17 @@ const Checkout = () => {
             </div>
           </div>
 
+          {orderError && (
+            <div style={{ color: 'red', marginBottom: '1rem', padding: '0.5rem', backgroundColor: '#ffe6e6', borderRadius: '4px' }}>
+              {orderError}
+            </div>
+          )}
           <button
             onClick={handlePlaceOrder}
             className="place-order-button"
+            disabled={isPlacingOrder}
           >
-            Place Order
+            {isPlacingOrder ? 'Placing Order...' : 'Place Order'}
           </button>
 
           <button

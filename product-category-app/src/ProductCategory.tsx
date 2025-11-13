@@ -37,7 +37,7 @@ const getCategoryPlaceholder = (category?: string): string => {
 const ProductCategory = ({ category: categoryProp }: ProductCategoryProps) => {
   const navigate = useNavigate();
   const { category: categoryParam, subCategory: subCategoryParam } = useParams<{ category?: string; subCategory?: string }>();
-  const category = categoryParam || categoryProp || '';
+  const category = categoryParam || categoryProp || 'clothing';
   const subCategory = subCategoryParam || '';
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
@@ -47,6 +47,13 @@ const ProductCategory = ({ category: categoryProp }: ProductCategoryProps) => {
 
   // Safely use Redux store - will work even if store is not available
   const { storeAvailable, dispatch, cartItems, cartActions } = useReduxStore();
+
+  // Redirect to default category if category is missing from URL
+  useEffect(() => {
+    if (!categoryParam && !categoryProp) {
+      navigate(`/shopping/clothing${subCategory ? `/${subCategory}` : ''}`, { replace: true });
+    }
+  }, [categoryParam, categoryProp, subCategory, navigate]);
 
   // Fetch cart on mount only if store is available
   useEffect(() => {
@@ -94,7 +101,8 @@ const ProductCategory = ({ category: categoryProp }: ProductCategoryProps) => {
   }
 
   const handleProductClick = (productId: number) => {
-    navigate(`/shopping/${category}/${productId}`);
+    const validCategory = category || 'clothing';
+    navigate(`/shopping/${validCategory}/${productId}`);
   };
 
   const handleQuantityChange = async (e: React.MouseEvent, productId: number, currentQuantity: number, delta: number) => {

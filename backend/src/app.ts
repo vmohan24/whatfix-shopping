@@ -3,6 +3,7 @@ import cors from 'cors';
 import configRoutes from './routes/configRoutes';
 import productRoutes from './routes/productRoutes';
 import cartRoutes from './routes/cartRoutes';
+import orderRoutes from './routes/orderRoutes';
 import { userMiddleware } from './middleware/userMiddleware';
 
 /**
@@ -20,6 +21,7 @@ app.use(userMiddleware); // Extract and log userId from query parameters
 app.use('/api', configRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
+app.use('/api/orders', orderRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

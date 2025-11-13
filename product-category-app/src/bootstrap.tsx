@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import ProductCategory from './ProductCategory';
 import ProductDetail from './ProductDetail';
@@ -12,10 +12,11 @@ const store = getStore();
 const App = () => (
   <BrowserRouter>
     <Routes>
+      <Route path="/" element={<Navigate to="/shopping/clothing" replace />} />
       <Route path="/shopping/:category" element={<ProductCategory />} />
       <Route path="/shopping/:category/:subCategory" element={<ProductCategory />} />
       <Route path="/shopping/:category/:productId" element={<ProductDetail />} />
-      <Route path="*" element={<ProductCategory />} />
+      <Route path="*" element={<Navigate to="/shopping/clothing" replace />} />
     </Routes>
   </BrowserRouter>
 );

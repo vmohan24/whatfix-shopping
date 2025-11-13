@@ -28,6 +28,15 @@ const ProductDetail = () => {
     }
   }, [storeAvailable, dispatch, cartActions]);
 
+  // Redirect to default category if category is missing from URL
+  useEffect(() => {
+    if (!category && actualProductId) {
+      navigate(`/shopping/clothing/${actualProductId}`, { replace: true });
+    } else if (!category) {
+      navigate('/shopping/clothing', { replace: true });
+    }
+  }, [category, actualProductId, navigate]);
+
   useEffect(() => {
     if (product) {
       const cartItem = cartItems.find((item: { product: { id: number }; quantity: number }) => item.product.id === product.id);
