@@ -8,10 +8,10 @@ import './MainContainer.css';
 const ProductCategory = lazy(() => import('product_category_app/ProductCategory'));
 const ProductDetail = lazy(() => import('product_category_app/ProductDetail'));
 const Cart = lazy(() => import('cart_app/Cart'));
+const Checkout = lazy(() => import('checkout_app/Checkout'));
 
 const Profile = lazy(() => import('../modules/Profile'));
 const Orders = lazy(() => import('../modules/Orders'));
-const Checkout = lazy(() => import('../modules/Checkout'));
 const Payment = lazy(() => import('../modules/Payment'));
 
 const LoadingSpinner = () => (

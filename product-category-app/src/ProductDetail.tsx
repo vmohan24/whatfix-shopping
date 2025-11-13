@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
-import { RootState, AppDispatch, addToCartAsync, updateCartItemAsync, fetchCartAsync } from 'shopping_dashboard/store';
 import './Module.css';
 import { Product } from './products';
-import { fetchProductById } from './api';
+import { fetchProductById, fetchProductsByCategoryAndSubCategory } from './api';
+import { useReduxStore } from './useReduxStore';
 
 const ProductDetail = () => {
   const { category, productId, subCategory } = useParams<{ category: string; productId?: string; subCategory?: string }>();
   const actualProductId = productId || subCategory;
   const navigate = useNavigate();
-  const dispatch = useDispatch<AppDispatch>();
-  const cartItems = useSelector((state: RootState) => state.cart.items);
+  
+  // Safely use Redux store - will work even if store is not available
+  const { storeAvailable, dispatch, cartItems, cartActions } = useReduxStore();
   
   const [product, setProduct] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState(1);
@@ -19,10 +19,14 @@ const ProductDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cartQuantity, setCartQuantity] = useState(0);
+  const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
+  const [loadingSimilar, setLoadingSimilar] = useState(false);
 
   useEffect(() => {
-    dispatch(fetchCartAsync());
-  }, [dispatch]);
+    if (storeAvailable && dispatch && cartActions?.fetchCartAsync) {
+      dispatch(cartActions.fetchCartAsync());
+    }
+  }, [storeAvailable, dispatch, cartActions]);
 
   useEffect(() => {
     if (product) {
@@ -62,6 +66,36 @@ const ProductDetail = () => {
     loadProduct();
   }, [category, actualProductId]);
 
+  // Load similar products when product is loaded
+  useEffect(() => {
+    const loadSimilarProducts = async () => {
+      if (!product || !category) {
+        setSimilarProducts([]);
+        return;
+      }
+
+      try {
+        setLoadingSimilar(true);
+        // Fetch all products in the same category and subcategory
+        const allProductsInSubCategory = await fetchProductsByCategoryAndSubCategory(
+          category,
+          product.subCategory
+        );
+        
+        // Filter out the current product
+        const similar = allProductsInSubCategory.filter(p => p.id !== product.id);
+        setSimilarProducts(similar);
+      } catch (err) {
+        console.error('Error loading similar products:', err);
+        setSimilarProducts([]);
+      } finally {
+        setLoadingSimilar(false);
+      }
+    };
+
+    loadSimilarProducts();
+  }, [product, category]);
+
   const handleIncreaseQuantity = () => {
     setQuantity(prev => prev + 1);
   };
@@ -71,7 +105,7 @@ const ProductDetail = () => {
   };
 
   const handleAddToCart = async () => {
-    if (!product) return;
+    if (!product || !storeAvailable || !dispatch || !cartActions) return;
 
     try {
       const productIdNum = parseInt(actualProductId || '', 10);
@@ -80,12 +114,12 @@ const ProductDetail = () => {
       }
 
       if (cartQuantity > 0) {
-        await dispatch(updateCartItemAsync({ 
+        await dispatch(cartActions.updateCartItemAsync({ 
           productId: productIdNum, 
           quantity: cartQuantity + quantity 
         }));
       } else {
-        await dispatch(addToCartAsync({ 
+        await dispatch(cartActions.addToCartAsync({ 
           productId: productIdNum, 
           quantity 
         }));
@@ -93,7 +127,9 @@ const ProductDetail = () => {
 
       setAddedToCart(true);
       setTimeout(() => setAddedToCart(false), 2000);
-      dispatch(fetchCartAsync());
+      if (cartActions.fetchCartAsync) {
+        dispatch(cartActions.fetchCartAsync());
+      }
     } catch (error) {
       console.error('Error adding to cart:', error);
     }
@@ -158,59 +194,93 @@ const ProductDetail = () => {
             </p>
           </div>
 
-          {cartQuantity > 0 && (
+          {storeAvailable && cartQuantity > 0 && (
             <div className="pdp-cart-info">
               <p>Currently in cart: {cartQuantity} {cartQuantity === 1 ? 'item' : 'items'}</p>
             </div>
           )}
 
-          <div className="pdp-quantity-section">
-            <label htmlFor="quantity">Quantity to {cartQuantity > 0 ? 'add' : ''}:</label>
-            <div className="quantity-controls">
-              <button 
-                onClick={handleDecreaseQuantity} 
-                className="quantity-button"
-                disabled={quantity <= 1}
-              >
-                −
-              </button>
-              <input
-                id="quantity"
-                type="number"
-                min="1"
-                value={quantity}
-                onChange={(e) => {
-                  const val = parseInt(e.target.value) || 1;
-                  setQuantity(val > 0 ? val : 1);
-                }}
-                className="quantity-input"
-              />
-              <button 
-                onClick={handleIncreaseQuantity} 
-                className="quantity-button"
-              >
-                +
-              </button>
-            </div>
-          </div>
+          {storeAvailable ? (
+            <>
+              <div className="pdp-quantity-section">
+                <label htmlFor="quantity">Quantity to {cartQuantity > 0 ? 'add' : ''}:</label>
+                <div className="quantity-controls">
+                  <button 
+                    onClick={handleDecreaseQuantity} 
+                    className="quantity-button"
+                    disabled={quantity <= 1}
+                  >
+                    −
+                  </button>
+                  <input
+                    id="quantity"
+                    type="number"
+                    min="1"
+                    value={quantity}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value) || 1;
+                      setQuantity(val > 0 ? val : 1);
+                    }}
+                    className="quantity-input"
+                  />
+                  <button 
+                    onClick={handleIncreaseQuantity} 
+                    className="quantity-button"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
 
-          <div className="pdp-total">
-            <p>Total: <strong>${(product.price * quantity).toFixed(2)}</strong></p>
-            {cartQuantity > 0 && (
-              <p className="pdp-total-cart">
-                New total in cart: <strong>${(product.price * (cartQuantity + quantity)).toFixed(2)}</strong>
+              <div className="pdp-total">
+                <p>Total: <strong>${(product.price * quantity).toFixed(2)}</strong></p>
+                {cartQuantity > 0 && (
+                  <p className="pdp-total-cart">
+                    New total in cart: <strong>${(product.price * (cartQuantity + quantity)).toFixed(2)}</strong>
+                  </p>
+                )}
+              </div>
+
+              <button 
+                onClick={handleAddToCart} 
+                className="add-to-cart-button"
+              >
+                {addedToCart ? '✓ Added to Cart!' : cartQuantity > 0 ? `Add ${quantity} More to Cart` : 'Add to Cart'}
+              </button>
+            </>
+          ) : (
+            <div className="pdp-cart-unavailable" style={{ padding: '1rem', backgroundColor: '#f5f5f5', borderRadius: '4px', marginTop: '1rem' }}>
+              <p style={{ fontSize: '0.9em', color: '#666', fontStyle: 'italic', margin: 0 }}>
+                Cart functionality is unavailable in standalone mode. Please use the main application to add items to cart.
               </p>
-            )}
-          </div>
-
-          <button 
-            onClick={handleAddToCart} 
-            className="add-to-cart-button"
-          >
-            {addedToCart ? '✓ Added to Cart!' : cartQuantity > 0 ? `Add ${quantity} More to Cart` : 'Add to Cart'}
-          </button>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Similar Items Section */}
+      {similarProducts.length > 0 && (
+        <div className="pdp-similar-section">
+          <h2 className="pdp-similar-title">Similar Items</h2>
+          <div className="pdp-similar-grid">
+            {similarProducts.map((similarProduct) => {
+              return (
+                <div
+                  key={similarProduct.id}
+                  className="pdp-similar-card"
+                  onClick={() => navigate(`/shopping/${category}/${similarProduct.id}`)}
+                >
+                  <div className="pdp-similar-image">{similarProduct.image}</div>
+                  <div className="pdp-similar-info">
+                    <h3 className="pdp-similar-name">{similarProduct.name}</h3>
+                    <p className="pdp-similar-price">${similarProduct.price.toFixed(2)}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

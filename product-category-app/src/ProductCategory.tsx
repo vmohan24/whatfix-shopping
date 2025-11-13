@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
-import { RootState, AppDispatch, updateCartItemAsync, removeFromCartAsync, fetchCartAsync, addToCartAsync } from 'shopping_dashboard/store';
 import './Module.css';
 import { Product } from './products';
 import { fetchProductsByCategory, fetchProductsByCategoryAndSubCategory } from './api';
 import ProductDetail from './ProductDetail';
+import { useReduxStore } from './useReduxStore';
 
 interface ProductCategoryProps {
   category?: string;
@@ -37,8 +36,6 @@ const getCategoryPlaceholder = (category?: string): string => {
 
 const ProductCategory = ({ category: categoryProp }: ProductCategoryProps) => {
   const navigate = useNavigate();
-  const dispatch = useDispatch<AppDispatch>();
-  const cartItems = useSelector((state: RootState) => state.cart.items);
   const { category: categoryParam, subCategory: subCategoryParam } = useParams<{ category?: string; subCategory?: string }>();
   const category = categoryParam || categoryProp || '';
   const subCategory = subCategoryParam || '';
@@ -48,10 +45,15 @@ const ProductCategory = ({ category: categoryProp }: ProductCategoryProps) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch cart on mount
+  // Safely use Redux store - will work even if store is not available
+  const { storeAvailable, dispatch, cartItems, cartActions } = useReduxStore();
+
+  // Fetch cart on mount only if store is available
   useEffect(() => {
-    dispatch(fetchCartAsync());
-  }, [dispatch]);
+    if (storeAvailable && dispatch && cartActions?.fetchCartAsync) {
+      dispatch(cartActions.fetchCartAsync());
+    }
+  }, [storeAvailable, dispatch, cartActions]);
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -97,29 +99,35 @@ const ProductCategory = ({ category: categoryProp }: ProductCategoryProps) => {
 
   const handleQuantityChange = async (e: React.MouseEvent, productId: number, currentQuantity: number, delta: number) => {
     e.stopPropagation(); // Prevent card click navigation
+    if (!storeAvailable || !dispatch || !cartActions) return;
+    
     const newQuantity = currentQuantity + delta;
     
     if (newQuantity <= 0) {
-      await dispatch(removeFromCartAsync(productId));
+      await dispatch(cartActions.removeFromCartAsync(productId));
     } else {
-      await dispatch(updateCartItemAsync({ productId, quantity: newQuantity }));
+      await dispatch(cartActions.updateCartItemAsync({ productId, quantity: newQuantity }));
     }
   };
 
   const handleQuantityInputChange = async (e: React.ChangeEvent<HTMLInputElement>, productId: number) => {
     e.stopPropagation(); // Prevent card click navigation
+    if (!storeAvailable || !dispatch || !cartActions) return;
+    
     const val = parseInt(e.target.value) || 0;
     
     if (val <= 0) {
-      await dispatch(removeFromCartAsync(productId));
+      await dispatch(cartActions.removeFromCartAsync(productId));
     } else {
-      await dispatch(updateCartItemAsync({ productId, quantity: val }));
+      await dispatch(cartActions.updateCartItemAsync({ productId, quantity: val }));
     }
   };
 
   const handleAddToCart = async (e: React.MouseEvent, productId: number) => {
     e.stopPropagation(); // Prevent card click navigation
-    await dispatch(addToCartAsync({ productId, quantity: 1 }));
+    if (!storeAvailable || !dispatch || !cartActions) return;
+    
+    await dispatch(cartActions.addToCartAsync({ productId, quantity: 1 }));
   };
 
   const getCartQuantity = (productId: number): number => {
@@ -183,7 +191,7 @@ const ProductCategory = ({ category: categoryProp }: ProductCategoryProps) => {
         {filteredProducts.length > 0 ? (
           <div className="products-grid">
             {filteredProducts.map((product) => {
-              const cartQuantity = getCartQuantity(product.id);
+              const cartQuantity = storeAvailable ? getCartQuantity(product.id) : 0;
               const isInCart = cartQuantity > 0;
               
               return (
@@ -198,7 +206,7 @@ const ProductCategory = ({ category: categoryProp }: ProductCategoryProps) => {
                     <p className="product-category">{product.category}</p>
                     <p className="product-price">${product.price.toFixed(2)}</p>
                     
-                    {isInCart ? (
+                    {storeAvailable && isInCart ? (
                       <div className="product-cart-controls" onClick={(e) => e.stopPropagation()}>
                         <span className="product-cart-label">In cart:</span>
                         <div className="product-quantity-controls">
@@ -226,7 +234,7 @@ const ProductCategory = ({ category: categoryProp }: ProductCategoryProps) => {
                           </button>
                         </div>
                       </div>
-                    ) : (
+                    ) : storeAvailable && (
                       <button
                         className="product-add-to-cart-button"
                         onClick={(e) => handleAddToCart(e, product.id)}

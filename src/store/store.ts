@@ -31,4 +31,5 @@ export {
   removeFromCartAsync
 } from './slices/cartSlice';
 export type { Product, CartItem } from './slices/cartSlice';
+export type { User } from './slices/userSlice';
 

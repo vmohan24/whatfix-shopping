@@ -16,6 +16,12 @@ declare module 'cart_app/Cart' {
   export default Cart;
 }
 
+declare module 'checkout_app/Checkout' {
+  import { ComponentType } from 'react';
+  const Checkout: ComponentType;
+  export default Checkout;
+}
+
 declare module 'shopping_dashboard/store' {
   export * from '../store/store';
 }
