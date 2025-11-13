@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { ProductModel } from '../models/Product';
+import { ProductModel, Product } from '../models/Product';
 import { InterestModel } from '../models/Interest';
 
 /**
@@ -23,7 +23,12 @@ export class ProductController {
         return;
       }
 
-      const products = ProductModel.getProductsByCategory(category);
+      let products = ProductModel.getProductsByCategory(category);
+      
+      // Sort products by user interests if userId is available
+      if (req.userId) {
+        products = ProductController.sortProductsByInterests(products, req.userId);
+      }
       
       res.status(200).json({
         success: true,
@@ -84,7 +89,12 @@ export class ProductController {
       }
 
       // Handle as subcategory filter
-      const products = ProductModel.getProductsByCategoryAndSubCategory(category, subCategory);
+      let products = ProductModel.getProductsByCategoryAndSubCategory(category, subCategory);
+      
+      // Sort products by user interests if userId is available
+      if (req.userId) {
+        products = ProductController.sortProductsByInterests(products, req.userId);
+      }
       
       res.status(200).json({
         success: true,
@@ -172,6 +182,43 @@ export class ProductController {
         error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
+  }
+
+  /**
+   * Sort products by user interests
+   * Products with interests come first, ordered by visitCount (descending)
+   * Products without interests come after, maintaining their original order
+   */
+  private static sortProductsByInterests(products: Product[], userId: string): Product[] {
+    const userInterests = InterestModel.getUserInterests(userId);
+    
+    // Create a map of productId -> visitCount for quick lookup
+    const interestMap = new Map<number, number>();
+    for (const interest of userInterests) {
+      interestMap.set(interest.productId, interest.visitCount);
+    }
+
+    // Separate products into two groups: with interests and without
+    const productsWithInterests: Array<{ product: Product; visitCount: number }> = [];
+    const productsWithoutInterests: Product[] = [];
+
+    for (const product of products) {
+      const visitCount = interestMap.get(product.id);
+      if (visitCount !== undefined) {
+        productsWithInterests.push({ product, visitCount });
+      } else {
+        productsWithoutInterests.push(product);
+      }
+    }
+
+    // Sort products with interests by visitCount (descending)
+    productsWithInterests.sort((a, b) => b.visitCount - a.visitCount);
+
+    // Combine: interested products first, then uninterested products
+    return [
+      ...productsWithInterests.map(item => item.product),
+      ...productsWithoutInterests
+    ];
   }
 }
 
