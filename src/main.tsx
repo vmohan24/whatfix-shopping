@@ -5,6 +5,7 @@ import { store } from './store/store';
 import Dashboard from './components/Dashboard';
 import './index.css';
 
+// User is initialized in the store's initialState
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <Provider store={store}>

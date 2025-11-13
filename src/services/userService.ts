@@ -1,31 +1,33 @@
 /**
- * User service to manage dummy user data
+ * User service to get user data from the Redux store
  */
 
-export interface User {
-  userId: string;
-  name: string;
-  email: string;
-}
+import { store } from '../store/store';
+import { User } from '../store/slices/userSlice';
 
-// Create a dummy user with a fixed userId
-const DUMMY_USER: User = {
-  userId: 'user-12345',
-  name: 'John Doe',
-  email: 'john.doe@example.com'
+/**
+ * Get the current user from the store
+ */
+export const getCurrentUser = (): User | null => {
+  try {
+    const state = store.getState();
+    return state.user?.user || null;
+  } catch (error) {
+    console.error('Error accessing store:', error);
+    return null;
+  }
 };
 
 /**
- * Get the current user (dummy user)
+ * Get the current user's ID from the store
  */
-export const getCurrentUser = (): User => {
-  return DUMMY_USER;
-};
-
-/**
- * Get the current user's ID
- */
-export const getCurrentUserId = (): string => {
-  return DUMMY_USER.userId;
+export const getCurrentUserId = (): string | null => {
+  try {
+    const state = store.getState();
+    return state.user?.user?.userId || null;
+  } catch (error) {
+    console.error('Error accessing store:', error);
+    return null;
+  }
 };
 

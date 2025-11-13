@@ -1,15 +1,15 @@
 import { configureStore } from '@reduxjs/toolkit';
+import userSlice from './slices/userSlice';
 
 // Import your slices here as you create them
 // import cartSlice from './slices/cartSlice';
-// import userSlice from './slices/userSlice';
 // import productSlice from './slices/productSlice';
 
 export const store = configureStore({
   reducer: {
+    user: userSlice,
     // Add your reducers here
     // cart: cartSlice,
-    // user: userSlice,
     // products: productSlice,
   },
   devTools: process.env.NODE_ENV !== 'production',
