@@ -51,7 +51,7 @@ module.exports = (env, argv) => ({
         './Payment': './src/modules/Payment',
       },
       remotes: {
-        clothing_app: 'clothing_app@http://localhost:3001/remoteEntry.js',
+        product_category_app: 'product_category_app@http://localhost:3001/remoteEntry.js',
       },
       shared: {
         react: { 

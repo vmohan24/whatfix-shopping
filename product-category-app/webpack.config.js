@@ -37,7 +37,7 @@ module.exports = (env, argv) => ({
   plugins: [
     new HtmlWebpackPlugin({ template: './public/index.html' }),
     new ModuleFederationPlugin({
-      name: 'clothing_app',
+      name: 'product_category_app',
       filename: 'remoteEntry.js',
       exposes: {
         './Clothing': './src/Clothing',

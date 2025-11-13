@@ -22,7 +22,7 @@ src/
   │   ├── LeftNav.tsx        # Left sidebar navigation
   │   └── MainContainer.tsx  # Main content area with routing
   ├── modules/               # Module components (micro-frontends)
-  │   ├── Clothing.tsx
+  │   ├── ProductCategory.tsx
   │   ├── Electronics.tsx
   │   ├── Mobiles.tsx
   │   ├── Profile.tsx
@@ -62,7 +62,7 @@ npm run build
 
 The dashboard configuration is fetched from `src/services/api.ts`. The configuration structure is defined in `src/types/config.ts` and includes:
 
-- **headerConfig**: Navigation items for the header (Clothing, Electronics, Mobiles)
+- **headerConfig**: Navigation items for the header (Product Category, Electronics, Mobiles)
 - **leftNavConfig**: Navigation items for the left sidebar (Profile, Cart, Orders)
 - **secondaryConfig**: Secondary modules (Checkout, Payment) that can be invoked from other modules
 
@@ -74,7 +74,7 @@ This application uses **Webpack Module Federation** to expose modules that can b
 
 ### Exposed Modules
 
-- Dashboard, Clothing, Electronics, Mobiles
+- Dashboard, Product Category, Electronics, Mobiles
 - Profile, Cart, Orders
 - Checkout, Payment
 
