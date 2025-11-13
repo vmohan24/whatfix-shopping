@@ -12,6 +12,7 @@ export class ProductController {
   static async getProductsByCategory(req: Request, res: Response): Promise<void> {
     try {
       const { category } = req.params;
+      // userId is available via req.userId (extracted by userMiddleware)
       
       if (!category) {
         res.status(400).json({
@@ -43,6 +44,7 @@ export class ProductController {
   static async getProductById(req: Request, res: Response): Promise<void> {
     try {
       const { category, productId } = req.params;
+      // userId is available via req.userId (extracted by userMiddleware)
       
       if (!category || !productId) {
         res.status(400).json({
@@ -90,6 +92,7 @@ export class ProductController {
    */
   static async getAllProducts(req: Request, res: Response): Promise<void> {
     try {
+      // userId is available via req.userId (extracted by userMiddleware)
       const products = ProductModel.getAllProducts();
       
       res.status(200).json({

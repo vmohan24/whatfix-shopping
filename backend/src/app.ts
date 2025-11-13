@@ -2,6 +2,7 @@ import express, { Application } from 'express';
 import cors from 'cors';
 import configRoutes from './routes/configRoutes';
 import productRoutes from './routes/productRoutes';
+import { userMiddleware } from './middleware/userMiddleware';
 
 /**
  * Express application setup
@@ -12,6 +13,7 @@ const app: Application = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(userMiddleware); // Extract and log userId from query parameters
 
 // Routes
 app.use('/api', configRoutes);

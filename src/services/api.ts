@@ -1,4 +1,5 @@
 import { DashboardConfig } from '../types/config';
+import { getCurrentUserId } from './userService';
 
 const API_BASE_URL = 'http://localhost:4001';
 
@@ -12,7 +13,8 @@ interface ApiResponse {
 // API service to fetch dashboard configuration from backend
 export const fetchDashboardConfig = async (): Promise<DashboardConfig> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/config`);
+    const userId = getCurrentUserId();
+    const response = await fetch(`${API_BASE_URL}/api/config?userId=${encodeURIComponent(userId)}`);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }

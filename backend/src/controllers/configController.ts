@@ -11,6 +11,7 @@ export class ConfigController {
    */
   static async getConfig(req: Request, res: Response): Promise<void> {
     try {
+      // userId is available via req.userId (extracted by userMiddleware)
       // Simulate a small delay to mimic real API behavior
       await new Promise(resolve => setTimeout(resolve, 100));
       

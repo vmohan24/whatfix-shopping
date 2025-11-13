@@ -1,4 +1,5 @@
 import { Product } from './products';
+import { getCurrentUserId } from './userService';
 
 const API_BASE_URL = 'http://localhost:4001';
 
@@ -14,7 +15,8 @@ interface ApiResponse<T> {
  */
 export const fetchProductsByCategory = async (category: string): Promise<Product[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/products/${category}`);
+    const userId = getCurrentUserId();
+    const response = await fetch(`${API_BASE_URL}/api/products/${category}?userId=${encodeURIComponent(userId)}`);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -36,7 +38,8 @@ export const fetchProductsByCategory = async (category: string): Promise<Product
  */
 export const fetchProductById = async (category: string, productId: number): Promise<Product> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/products/${category}/${productId}`);
+    const userId = getCurrentUserId();
+    const response = await fetch(`${API_BASE_URL}/api/products/${category}/${productId}?userId=${encodeURIComponent(userId)}`);
     if (!response.ok) {
       if (response.status === 404) {
         throw new Error('Product not found');
