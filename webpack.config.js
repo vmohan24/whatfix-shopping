@@ -49,6 +49,7 @@ module.exports = (env, argv) => ({
         './Orders': './src/modules/Orders',
         './Checkout': './src/modules/Checkout',
         './Payment': './src/modules/Payment',
+        './store': './src/store/store',
       },
       remotes: {
         product_category_app: 'product_category_app@http://localhost:3001/remoteEntry.js',
@@ -67,6 +68,16 @@ module.exports = (env, argv) => ({
         'react-router-dom': { 
           singleton: true, 
           requiredVersion: '^6.20.0',
+          eager: true
+        },
+        '@reduxjs/toolkit': {
+          singleton: true,
+          requiredVersion: '^2.10.1',
+          eager: true
+        },
+        'react-redux': {
+          singleton: true,
+          requiredVersion: '^9.2.0',
           eager: true
         },
       },

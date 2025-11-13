@@ -16,3 +16,7 @@ declare module 'product_category_app/ProductDetail' {
   export default ProductDetail;
 }
 
+declare module 'shopping_dashboard/store' {
+  export * from '../store/store';
+}
+

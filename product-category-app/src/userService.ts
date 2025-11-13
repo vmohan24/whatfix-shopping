@@ -1,31 +1,22 @@
 /**
- * User service to manage dummy user data
+ * Get the current user's ID from the host app's store if available, otherwise null
  */
-
-export interface User {
-  userId: string;
-  name: string;
-  email: string;
-}
-
-// Create a dummy user with a fixed userId (same as main app)
-const DUMMY_USER: User = {
-  userId: 'user-12345',
-  name: 'John Doe',
-  email: 'john.doe@example.com'
-};
-
-/**
- * Get the current user (dummy user)
- */
-export const getCurrentUser = (): User => {
-  return DUMMY_USER;
-};
-
-/**
- * Get the current user's ID
- */
-export const getCurrentUserId = (): string => {
-  return DUMMY_USER.userId;
+export const getCurrentUserId = (): string | null => {
+  try {
+    // Try to access the shared Redux store from the host app
+    const { store } = require('shopping_dashboard/store');
+    const state = store.getState();
+    
+    // Check if user slice exists and has userId
+    if (state.user?.userId) {
+      return state.user.userId;
+    }
+    
+    // If no user slice or userId, return null
+    return null;
+  } catch (error) {
+    // If store is not available (e.g., running standalone), return null
+    return null;
+  }
 };
 

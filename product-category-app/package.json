@@ -7,8 +7,10 @@
     "preview": "webpack serve --mode production"
   },
   "dependencies": {
+    "@reduxjs/toolkit": "^2.10.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-redux": "^9.2.0",
     "react-router-dom": "^6.20.0"
   },
   "devDependencies": {
@@ -24,4 +26,3 @@
     "webpack-dev-server": "^4.15.1"
   }
 }
-

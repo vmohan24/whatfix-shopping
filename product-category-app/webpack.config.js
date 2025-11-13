@@ -44,10 +44,15 @@ module.exports = (env, argv) => ({
         './ProductCategory': './src/Clothing',
         './ProductDetail': './src/ProductDetail',
       },
+      remotes: {
+        shopping_dashboard: 'shopping_dashboard@http://localhost:3000/remoteEntry.js',
+      },
       shared: {
         react: { ...sharedConfig, requiredVersion: deps.react },
         'react-dom': { ...sharedConfig, requiredVersion: deps['react-dom'] },
         'react-router-dom': { ...sharedConfig, requiredVersion: deps['react-router-dom'] },
+        '@reduxjs/toolkit': { ...sharedConfig, requiredVersion: deps['@reduxjs/toolkit'] },
+        'react-redux': { ...sharedConfig, requiredVersion: deps['react-redux'] },
       },
     }),
   ],

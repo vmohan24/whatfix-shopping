@@ -14,7 +14,16 @@ interface ApiResponse {
 export const fetchDashboardConfig = async (): Promise<DashboardConfig> => {
   try {
     const userId = getCurrentUserId();
-    const response = await fetch(`${API_BASE_URL}/api/config?userId=${encodeURIComponent(userId)}`);
+    console.log('userId', userId);
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+    if (userId) {
+      headers['userId'] = userId;
+    }
+    const response = await fetch(`${API_BASE_URL}/api/config`, {
+      headers,
+    });
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }

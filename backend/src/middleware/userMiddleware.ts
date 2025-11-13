@@ -12,11 +12,11 @@ declare global {
 }
 
 /**
- * Middleware to extract userId from query parameters and attach to request
+ * Middleware to extract userId from request headers and attach to request
  * Also logs the userId for debugging/monitoring purposes
  */
 export const userMiddleware = (req: Request, res: Response, next: NextFunction): void => {
-  const userId = req.query.userId as string | undefined;
+  const userId = req.headers['userId'] as string | undefined;
   
   if (userId) {
     req.userId = userId;

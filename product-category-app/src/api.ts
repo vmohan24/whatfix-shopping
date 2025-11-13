@@ -16,7 +16,15 @@ interface ApiResponse<T> {
 export const fetchProductsByCategory = async (category: string): Promise<Product[]> => {
   try {
     const userId = getCurrentUserId();
-    const response = await fetch(`${API_BASE_URL}/api/products/${category}?userId=${encodeURIComponent(userId)}`);
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+    if (userId) {
+      headers['userId'] = userId;
+    }
+    const response = await fetch(`${API_BASE_URL}/api/products/${category}`, {
+      headers,
+    });
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -39,7 +47,15 @@ export const fetchProductsByCategory = async (category: string): Promise<Product
 export const fetchProductById = async (category: string, productId: number): Promise<Product> => {
   try {
     const userId = getCurrentUserId();
-    const response = await fetch(`${API_BASE_URL}/api/products/${category}/${productId}?userId=${encodeURIComponent(userId)}`);
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+    if (userId) {
+      headers['userId'] = userId;
+    }
+    const response = await fetch(`${API_BASE_URL}/api/products/${category}/${productId}`, {
+      headers,
+    });
     if (!response.ok) {
       if (response.status === 404) {
         throw new Error('Product not found');
