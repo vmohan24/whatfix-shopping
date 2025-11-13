@@ -4,6 +4,8 @@ import './Module.css';
 import { Product } from './products';
 import { fetchProductById, fetchProductsByCategoryAndSubCategory } from './api';
 import { useReduxStore } from './useReduxStore';
+import { getCategoryPath } from './helpers/category.helper';
+import { DEFAULT_CATEGORY } from './constants/category.constants';
 
 const ProductDetail = () => {
   const { category, productId, subCategory } = useParams<{ category: string; productId?: string; subCategory?: string }>();
@@ -31,9 +33,9 @@ const ProductDetail = () => {
   // Redirect to default category if category is missing from URL
   useEffect(() => {
     if (!category && actualProductId) {
-      navigate(`/shopping/clothing/${actualProductId}`, { replace: true });
+      navigate(`/shopping/${DEFAULT_CATEGORY}/${actualProductId}`, { replace: true });
     } else if (!category) {
-      navigate('/shopping/clothing', { replace: true });
+      navigate(`/shopping/${DEFAULT_CATEGORY}`, { replace: true });
     }
   }, [category, actualProductId, navigate]);
 
@@ -144,17 +146,6 @@ const ProductDetail = () => {
     }
   };
 
-  const getCategoryPath = (cat?: string): string => {
-    switch (cat) {
-      case 'electronics':
-        return '/shopping/electronics';
-      case 'mobiles':
-        return '/shopping/mobiles';
-      case 'clothing':
-      default:
-        return '/shopping/clothing';
-    }
-  };
 
   if (loading) {
     return (

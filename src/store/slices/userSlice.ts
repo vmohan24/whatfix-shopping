@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { INITIAL_USER } from '../../constants/user.constants';
 
 export interface User {
   userId: string;
@@ -9,13 +10,6 @@ export interface User {
 interface UserState {
   user: User | null;
 }
-
-// Dummy user data - initialized in the store
-const INITIAL_USER: User = {
-  userId: 'user-12345',
-  name: 'Vishnu Mohan',
-  email: 'vishnu.mohan@example.com'
-};
 
 const initialState: UserState = {
   user: INITIAL_USER,

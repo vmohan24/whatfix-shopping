@@ -1,7 +1,6 @@
 import { Product } from './products';
-import { getCurrentUserId } from './userService';
-
-const API_BASE_URL = 'http://localhost:4001';
+import { API_BASE_URL } from './constants/api.constants';
+import { createHeaders } from './helpers/api.helper';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -15,15 +14,8 @@ interface ApiResponse<T> {
  */
 export const fetchProductsByCategory = async (category: string): Promise<Product[]> => {
   try {
-    const userId = getCurrentUserId();
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    };
-    if (userId) {
-      headers['userId'] = userId;
-    }
     const response = await fetch(`${API_BASE_URL}/api/products/${category}`, {
-      headers,
+      headers: createHeaders(),
     });
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -46,15 +38,8 @@ export const fetchProductsByCategory = async (category: string): Promise<Product
  */
 export const fetchProductsByCategoryAndSubCategory = async (category: string, subCategory: string): Promise<Product[]> => {
   try {
-    const userId = getCurrentUserId();
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    };
-    if (userId) {
-      headers['userId'] = userId;
-    }
     const response = await fetch(`${API_BASE_URL}/api/products/${category}/${subCategory}`, {
-      headers,
+      headers: createHeaders(),
     });
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -77,15 +62,8 @@ export const fetchProductsByCategoryAndSubCategory = async (category: string, su
  */
 export const fetchProductById = async (category: string, productId: number): Promise<Product> => {
   try {
-    const userId = getCurrentUserId();
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    };
-    if (userId) {
-      headers['userId'] = userId;
-    }
     const response = await fetch(`${API_BASE_URL}/api/products/${category}/${productId}`, {
-      headers,
+      headers: createHeaders(),
     });
     if (!response.ok) {
       if (response.status === 404) {

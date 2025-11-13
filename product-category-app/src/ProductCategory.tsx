@@ -5,39 +5,17 @@ import { Product } from './products';
 import { fetchProductsByCategory, fetchProductsByCategoryAndSubCategory } from './api';
 import ProductDetail from './ProductDetail';
 import { useReduxStore } from './useReduxStore';
+import { getCategoryTitle, getCategoryPlaceholder } from './helpers/category.helper';
+import { DEFAULT_CATEGORY } from './constants/category.constants';
 
 interface ProductCategoryProps {
   category?: string;
 }
 
-const getCategoryTitle = (category?: string): string => {
-  switch (category) {
-    case 'electronics':
-      return 'Electronics';
-    case 'mobiles':
-      return 'Mobiles';
-    case 'clothing':
-    default:
-      return 'Clothing';
-  }
-};
-
-const getCategoryPlaceholder = (category?: string): string => {
-  switch (category) {
-    case 'electronics':
-      return 'Search for electronic items...';
-    case 'mobiles':
-      return 'Search for mobile phones...';
-    case 'clothing':
-    default:
-      return 'Search for clothing items...';
-  }
-};
-
 const ProductCategory = ({ category: categoryProp }: ProductCategoryProps) => {
   const navigate = useNavigate();
   const { category: categoryParam, subCategory: subCategoryParam } = useParams<{ category?: string; subCategory?: string }>();
-  const category = categoryParam || categoryProp || 'clothing';
+  const category = categoryParam || categoryProp || DEFAULT_CATEGORY;
   const subCategory = subCategoryParam || '';
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
@@ -51,7 +29,7 @@ const ProductCategory = ({ category: categoryProp }: ProductCategoryProps) => {
   // Redirect to default category if category is missing from URL
   useEffect(() => {
     if (!categoryParam && !categoryProp) {
-      navigate(`/shopping/clothing${subCategory ? `/${subCategory}` : ''}`, { replace: true });
+      navigate(`/shopping/${DEFAULT_CATEGORY}${subCategory ? `/${subCategory}` : ''}`, { replace: true });
     }
   }, [categoryParam, categoryProp, subCategory, navigate]);
 
@@ -101,7 +79,7 @@ const ProductCategory = ({ category: categoryProp }: ProductCategoryProps) => {
   }
 
   const handleProductClick = (productId: number) => {
-    const validCategory = category || 'clothing';
+    const validCategory = category || DEFAULT_CATEGORY;
     navigate(`/shopping/${validCategory}/${productId}`);
   };
 

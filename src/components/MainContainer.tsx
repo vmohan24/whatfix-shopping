@@ -2,17 +2,12 @@ import React, { lazy, Suspense, useMemo } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { DashboardConfig } from '../types/config';
 import { extractCategoryFromPath, getDefaultRedirectPath } from '../helpers/routes.helper';
+import { componentMap } from '../constants/routes.constants';
 import './MainContainer.css';
 
 // Lazy load module components (these would be micro-frontends in production)
 const ProductCategory = lazy(() => import('product_category_app/ProductCategory'));
 const ProductDetail = lazy(() => import('product_category_app/ProductDetail'));
-const Cart = lazy(() => import('cart_app/Cart'));
-const Checkout = lazy(() => import('checkout_app/Checkout'));
-const Orders = lazy(() => import('orders_app/Orders'));
-
-const Profile = lazy(() => import('../modules/Profile'));
-const Payment = lazy(() => import('../modules/Payment'));
 
 const LoadingSpinner = () => (
   <div className="loading-spinner">
@@ -30,15 +25,6 @@ const MainContainer = ({ config }: MainContainerProps) => {
   const defaultRedirectPath = useMemo(() => {
     return getDefaultRedirectPath(config);
   }, [config]);
-
-  // Component mapping for different route types
-  const componentMap: Record<string, React.LazyExoticComponent<any>> = {
-    profile: Profile,
-    cart: Cart,
-    orders: Orders,
-    checkout: Checkout,
-    payment: Payment,
-  };
 
   return (
     <main className="main-container">

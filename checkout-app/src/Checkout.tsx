@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch, CartItem, fetchCartAsync, clearCart } from 'shopping_dashboard/store';
 import { createOrderAPI } from './api';
+import { calculateSubtotal, calculateTax, calculateTotal } from './helpers/checkout.helper';
+import { DEFAULT_COUNTRY, ORDER_REDIRECT_DELAY } from './constants/checkout.constants';
 import './Checkout.css';
 
 const Checkout = () => {
@@ -19,7 +21,7 @@ const Checkout = () => {
     city: '',
     state: '',
     zipCode: '',
-    country: 'United States',
+    country: DEFAULT_COUNTRY,
   });
 
   const [paymentInfo, setPaymentInfo] = useState({
@@ -38,17 +40,6 @@ const Checkout = () => {
     dispatch(fetchCartAsync());
   }, [dispatch]);
 
-  const calculateSubtotal = (): number => {
-    return cartItems.reduce((total: number, item: CartItem) => total + item.product.price * item.quantity, 0);
-  };
-
-  const calculateTax = (): number => {
-    return calculateSubtotal() * 0.08; // 8% tax
-  };
-
-  const calculateTotal = (): number => {
-    return calculateSubtotal() + calculateTax();
-  };
 
   const handleShippingChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -86,10 +77,10 @@ const Checkout = () => {
       dispatch(clearCart());
       setOrderPlaced(true);
       
-      // Redirect to orders after 2 seconds
+      // Redirect to orders after delay
       setTimeout(() => {
         navigate('/orders');
-      }, 2000);
+      }, ORDER_REDIRECT_DELAY);
     } catch (error) {
       console.error('Failed to place order:', error);
       setOrderError(error instanceof Error ? error.message : 'Failed to place order. Please try again.');
@@ -318,11 +309,11 @@ const Checkout = () => {
           <div className="order-summary-totals">
             <div className="summary-row">
               <span className="summary-label">Subtotal:</span>
-              <span className="summary-value">${calculateSubtotal().toFixed(2)}</span>
+              <span className="summary-value">${calculateSubtotal(cartItems).toFixed(2)}</span>
             </div>
             <div className="summary-row">
               <span className="summary-label">Tax:</span>
-              <span className="summary-value">${calculateTax().toFixed(2)}</span>
+              <span className="summary-value">${calculateTax(calculateSubtotal(cartItems)).toFixed(2)}</span>
             </div>
             <div className="summary-row">
               <span className="summary-label">Shipping:</span>
@@ -331,7 +322,7 @@ const Checkout = () => {
             <div className="summary-divider"></div>
             <div className="summary-row summary-total">
               <span className="summary-label">Total:</span>
-              <span className="summary-value">${calculateTotal().toFixed(2)}</span>
+              <span className="summary-value">${calculateTotal(cartItems).toFixed(2)}</span>
             </div>
           </div>
 

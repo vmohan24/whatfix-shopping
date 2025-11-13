@@ -1,8 +1,8 @@
 import { DashboardConfig } from '../types/config';
-import { getCurrentUserId } from './userService';
 import { CartItem } from '../store/slices/cartSlice';
-
-const API_BASE_URL = 'http://localhost:4001';
+import { API_BASE_URL } from '../constants/api.constants';
+import { getCurrentUserId, requireUserId } from '../helpers/user.helper';
+import { createHeaders } from '../helpers/api.helper';
 
 interface ApiResponse<T = any> {
   success: boolean;
@@ -10,17 +10,6 @@ interface ApiResponse<T = any> {
   message?: string;
   error?: string;
 }
-
-const createHeaders = (): HeadersInit => {
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-  };
-  const userId = getCurrentUserId();
-  if (userId) {
-    headers['userId'] = userId;
-  }
-  return headers;
-};
 
 export const fetchDashboardConfig = async (): Promise<DashboardConfig> => {
   const response = await fetch(`${API_BASE_URL}/api/config`, {
@@ -37,14 +26,6 @@ export const fetchDashboardConfig = async (): Promise<DashboardConfig> => {
   }
   
   return result.data;
-};
-
-const requireUserId = (): string => {
-  const userId = getCurrentUserId();
-  if (!userId) {
-    throw new Error('User ID is required');
-  }
-  return userId;
 };
 
 export const fetchCart = async (): Promise<CartItem[]> => {

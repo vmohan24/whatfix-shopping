@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import classNames from 'classnames';
 import { NavConfig } from '../types/config';
+import { isActive as checkIsActive } from '../helpers/navigation.helper';
 import './Header.css';
 
 interface HeaderProps {
@@ -15,27 +16,6 @@ const Header = ({ headerConfig, onMenuToggle, isMobileMenuOpen }: HeaderProps) =
   if (!headerConfig) {
     return null;
   }
-
-  const isActive = (path: string) => {
-    // Exact match
-    if (location.pathname === path) return true;
-    
-    // Check if pathname starts with the config path followed by a slash
-    if (!location.pathname.startsWith(path + '/')) return false;
-    
-    // Only mark as active if there's no longer path that also matches
-    // This ensures only the most specific (deepest) matching path is active
-    const hasLongerMatch = Object.values(headerConfig).some(config => {
-      const otherPath = config.path;
-      // Skip the current path
-      if (otherPath === path) return false;
-      // Check if there's a longer path that also matches
-      return otherPath.length > path.length && 
-             (location.pathname === otherPath || location.pathname.startsWith(otherPath + '/'));
-    });
-    
-    return !hasLongerMatch;
-  };
 
   return (
     <header className="dashboard-header">
@@ -59,7 +39,7 @@ const Header = ({ headerConfig, onMenuToggle, isMobileMenuOpen }: HeaderProps) =
             <Link
               key={key}
               to={config.path}
-              className={classNames('header-nav-item', { active:  isActive(config.path) })}
+              className={classNames('header-nav-item', { active: checkIsActive(config.path, location.pathname, headerConfig) })}
             >
               {config.title}
             </Link>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchOrdersAPI, Order } from './api';
+import { formatDate, getStatusColor } from './helpers/order.helper';
 import './Orders.css';
 
 const Orders = () => {
@@ -26,34 +27,6 @@ const Orders = () => {
 
     loadOrders();
   }, []);
-
-  const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  const getStatusColor = (status: Order['status']): string => {
-    switch (status) {
-      case 'pending':
-        return '#ffa500';
-      case 'processing':
-        return '#0066cc';
-      case 'shipped':
-        return '#0066cc';
-      case 'delivered':
-        return '#00aa00';
-      case 'cancelled':
-        return '#cc0000';
-      default:
-        return '#808080';
-    }
-  };
 
   if (loading) {
     return (

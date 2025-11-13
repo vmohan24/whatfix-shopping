@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch, CartItem, updateCartItemAsync, removeFromCartAsync, fetchCartAsync } from 'shopping_dashboard/store';
+import { calculateTotal } from './helpers/cart.helper';
 import './Cart.css';
 
 const Cart = () => {
@@ -26,10 +27,6 @@ const Cart = () => {
 
   const handleRemoveItem = (productId: number) => {
     dispatch(removeFromCartAsync(productId));
-  };
-
-  const calculateTotal = (): number => {
-    return cartItems.reduce((total: number, item: CartItem) => total + item.product.price * item.quantity, 0);
   };
 
   const handleCheckout = () => {
@@ -151,7 +148,7 @@ const Cart = () => {
           <div className="cart-summary-content">
             <div className="cart-summary-row">
               <span className="summary-label">Subtotal:</span>
-              <span className="summary-value">${calculateTotal().toFixed(2)}</span>
+              <span className="summary-value">${calculateTotal(cartItems).toFixed(2)}</span>
             </div>
             <div className="cart-summary-row">
               <span className="summary-label">Shipping:</span>
@@ -160,7 +157,7 @@ const Cart = () => {
             <div className="cart-summary-divider"></div>
             <div className="cart-summary-row cart-summary-total">
               <span className="summary-label">Total:</span>
-              <span className="summary-value">${calculateTotal().toFixed(2)}</span>
+              <span className="summary-value">${calculateTotal(cartItems).toFixed(2)}</span>
             </div>
             <button
               onClick={handleCheckout}
