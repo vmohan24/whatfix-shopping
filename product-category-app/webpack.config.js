@@ -40,8 +40,7 @@ module.exports = (env, argv) => ({
       name: 'product_category_app',
       filename: 'remoteEntry.js',
       exposes: {
-        './Clothing': './src/Clothing',
-        './ProductCategory': './src/Clothing',
+        './ProductCategory': './src/ProductCategory',
         './ProductDetail': './src/ProductDetail',
       },
       remotes: {

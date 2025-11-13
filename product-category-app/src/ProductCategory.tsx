@@ -35,7 +35,7 @@ const getCategoryPlaceholder = (category?: string): string => {
 const ProductCategory = ({ category: categoryProp }: ProductCategoryProps) => {
   const navigate = useNavigate();
   const { category: categoryParam } = useParams<{ category?: string }>();
-  const category = categoryParam || categoryProp || 'clothing';
+  const category = categoryParam || categoryProp || '';
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -147,7 +147,5 @@ const ProductCategory = ({ category: categoryProp }: ProductCategoryProps) => {
   );
 };
 
-// Export both for backward compatibility
 export default ProductCategory;
-export { ProductCategory as Clothing };
 

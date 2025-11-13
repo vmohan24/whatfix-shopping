@@ -94,7 +94,6 @@ export class ProductController {
     try {
       // userId is available via req.userId (extracted by userMiddleware)
       const products = ProductModel.getAllProducts();
-      
       res.status(200).json({
         success: true,
         data: products

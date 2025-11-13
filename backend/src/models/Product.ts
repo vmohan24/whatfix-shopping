@@ -57,10 +57,10 @@ export class ProductModel {
   }
 
   /**
-   * Get all products grouped by category
+   * Get all products as a flat array
    */
-  static getAllProducts(): Record<string, Product[]> {
-    return this.allProducts;
+  static getAllProducts(): Product[] {
+    return Object.values(this.allProducts).flat();
   }
 
   /**
