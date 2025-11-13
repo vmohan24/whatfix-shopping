@@ -42,6 +42,37 @@ export const fetchProductsByCategory = async (category: string): Promise<Product
 };
 
 /**
+ * Fetch products by category and subcategory
+ */
+export const fetchProductsByCategoryAndSubCategory = async (category: string, subCategory: string): Promise<Product[]> => {
+  try {
+    const userId = getCurrentUserId();
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+    if (userId) {
+      headers['userId'] = userId;
+    }
+    const response = await fetch(`${API_BASE_URL}/api/products/${category}/${subCategory}`, {
+      headers,
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const result: ApiResponse<Product[]> = await response.json();
+    if (!result.success || !result.data) {
+      throw new Error(result.message || 'Failed to fetch products');
+    }
+    
+    return result.data;
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    throw error;
+  }
+};
+
+/**
  * Fetch a single product by category and id
  */
 export const fetchProductById = async (category: string, productId: number): Promise<Product> => {

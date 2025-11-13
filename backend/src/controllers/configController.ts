@@ -15,7 +15,10 @@ export class ConfigController {
       // Simulate a small delay to mimic real API behavior
       await new Promise(resolve => setTimeout(resolve, 100));
       
-      const config = DashboardConfigModel.getConfig();
+      // Generate dynamic config based on user interests
+      const config = req.userId 
+        ? DashboardConfigModel.getConfigForUser(req.userId)
+        : DashboardConfigModel.getConfig();
       
       res.status(200).json({
         success: true,

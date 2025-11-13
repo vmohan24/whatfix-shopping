@@ -51,10 +51,16 @@ const MainContainer = ({ config }: MainContainerProps) => {
             <Route path="/" element={<div className="not-found no-config-message">Its not you, but its us. We forgot to add configurations to the app. :'(</div>} />
           )}
           
-          {/* Shopping category routes from headerConfig */}
+          {/* Shopping category routes from headerConfig - only for paths without subcategories */}
           {Object.entries(config.headerConfig || {}).map(([key, navItem]) => {
-            const category = extractCategoryFromPath(navItem.path);
-            // Only render if we have a valid category
+            // Only create specific routes for paths that are exactly /shopping/:category
+            // Paths with subcategories (/shopping/:category/:subCategory) will be handled by the dynamic route below
+            const pathParts = navItem.path.split('/').filter(part => part.length > 0);
+            if (pathParts.length !== 2 || pathParts[0] !== 'shopping') {
+              // Skip this route - it will be handled by dynamic routes below
+              return null;
+            }
+            const category = pathParts[1];
             if (!category) return null;
             return (
               <Route
@@ -64,6 +70,9 @@ const MainContainer = ({ config }: MainContainerProps) => {
               />
             );
           })}
+          
+          {/* Category with subcategory route (must come before productId route) */}
+          <Route path="/shopping/:category/:subCategory" element={<ProductCategory />} />
           
           {/* Product detail route (dynamic) */}
           <Route path="/shopping/:category/:productId" element={<ProductDetail />} />

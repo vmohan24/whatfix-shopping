@@ -32,7 +32,9 @@ const addToCart = (product: Product, quantity: number) => {
 };
 
 const ProductDetail = () => {
-  const { category, productId } = useParams<{ category: string; productId: string }>();
+  const { category, productId, subCategory } = useParams<{ category: string; productId?: string; subCategory?: string }>();
+  // Use productId if available, otherwise use subCategory (when it's numeric)
+  const actualProductId = productId || subCategory;
   const navigate = useNavigate();
   const [product, setProduct] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState(1);
@@ -42,7 +44,7 @@ const ProductDetail = () => {
 
   useEffect(() => {
     const loadProduct = async () => {
-      if (!category || !productId) {
+      if (!category || !actualProductId) {
         setLoading(false);
         return;
       }
@@ -50,7 +52,7 @@ const ProductDetail = () => {
       try {
         setLoading(true);
         setError(null);
-        const productIdNum = parseInt(productId, 10);
+        const productIdNum = parseInt(actualProductId, 10);
         if (isNaN(productIdNum)) {
           throw new Error('Invalid product ID');
         }
@@ -65,7 +67,7 @@ const ProductDetail = () => {
     };
 
     loadProduct();
-  }, [category, productId]);
+  }, [category, actualProductId]);
 
   const handleIncreaseQuantity = () => {
     setQuantity(prev => prev + 1);

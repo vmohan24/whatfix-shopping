@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { ProductModel } from '../models/Product';
+import { InterestModel } from '../models/Interest';
 
 /**
  * Controller for handling product requests
@@ -23,6 +24,67 @@ export class ProductController {
       }
 
       const products = ProductModel.getProductsByCategory(category);
+      
+      res.status(200).json({
+        success: true,
+        data: products
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: 'Failed to fetch products',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  /**
+   * Get products by category and subcategory
+   * GET /api/products/:category/:subCategory
+   * Also handles numeric productIds by delegating to getProductById
+   */
+  static async getProductsByCategoryAndSubCategory(req: Request, res: Response): Promise<void> {
+    try {
+      const { category, subCategory } = req.params;
+      // userId is available via req.userId (extracted by userMiddleware)
+      
+      if (!category || !subCategory) {
+        res.status(400).json({
+          success: false,
+          message: 'Category and subCategory parameters are required'
+        });
+        return;
+      }
+
+      // Check if subCategory is actually a numeric productId
+      // If so, delegate to getProductById logic
+      const productIdNum = parseInt(subCategory, 10);
+      if (!isNaN(productIdNum)) {
+        // This is a productId, handle it as a product detail request
+        const product = ProductModel.getProductById(category, productIdNum);
+        
+        if (!product) {
+          res.status(404).json({
+            success: false,
+            message: 'Product not found'
+          });
+          return;
+        }
+
+        // Track interest for this product view
+        if (req.userId) {
+          InterestModel.trackProductView(req.userId, productIdNum);
+        }
+
+        res.status(200).json({
+          success: true,
+          data: product
+        });
+        return;
+      }
+
+      // Handle as subcategory filter
+      const products = ProductModel.getProductsByCategoryAndSubCategory(category, subCategory);
       
       res.status(200).json({
         success: true,
@@ -71,6 +133,11 @@ export class ProductController {
           message: 'Product not found'
         });
         return;
+      }
+
+      // Track interest for this product view
+      if (req.userId) {
+        InterestModel.trackProductView(req.userId, productIdNum);
       }
 
       res.status(200).json({

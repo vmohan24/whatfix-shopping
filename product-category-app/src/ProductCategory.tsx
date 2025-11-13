@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import './Module.css';
 import { Product } from './products';
-import { fetchProductsByCategory } from './api';
+import { fetchProductsByCategory, fetchProductsByCategoryAndSubCategory } from './api';
+import ProductDetail from './ProductDetail';
 
 interface ProductCategoryProps {
   category?: string;
@@ -34,8 +35,9 @@ const getCategoryPlaceholder = (category?: string): string => {
 
 const ProductCategory = ({ category: categoryProp }: ProductCategoryProps) => {
   const navigate = useNavigate();
-  const { category: categoryParam } = useParams<{ category?: string }>();
+  const { category: categoryParam, subCategory: subCategoryParam } = useParams<{ category?: string; subCategory?: string }>();
   const category = categoryParam || categoryProp || '';
+  const subCategory = subCategoryParam || '';
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -47,7 +49,18 @@ const ProductCategory = ({ category: categoryProp }: ProductCategoryProps) => {
       try {
         setLoading(true);
         setError(null);
-        const fetchedProducts = await fetchProductsByCategory(category);
+        // Check if subCategory is numeric (productId) - if so, don't fetch here
+        const productIdNum = parseInt(subCategory, 10);
+        if (subCategory && !isNaN(productIdNum)) {
+          // This is a productId, not a subcategory - don't fetch products
+          setLoading(false);
+          return;
+        }
+        
+        // Fetch products by category and subcategory if subCategory exists, otherwise by category only
+        const fetchedProducts = subCategory 
+          ? await fetchProductsByCategoryAndSubCategory(category, subCategory)
+          : await fetchProductsByCategory(category);
         setProducts(fetchedProducts);
         setFilteredProducts(fetchedProducts);
         setSearchQuery('');
@@ -61,7 +74,13 @@ const ProductCategory = ({ category: categoryProp }: ProductCategoryProps) => {
     };
 
     loadProducts();
-  }, [category]);
+  }, [category, subCategory]);
+
+  // If subCategory is numeric, it's actually a productId - render ProductDetail instead
+  const productIdNum = parseInt(subCategory, 10);
+  if (subCategory && !isNaN(productIdNum)) {
+    return <ProductDetail />;
+  }
 
   const handleProductClick = (productId: number) => {
     navigate(`/shopping/${category}/${productId}`);

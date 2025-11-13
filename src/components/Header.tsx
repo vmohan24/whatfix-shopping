@@ -19,9 +19,22 @@ const Header = ({ headerConfig, onMenuToggle, isMobileMenuOpen }: HeaderProps) =
   const isActive = (path: string) => {
     // Exact match
     if (location.pathname === path) return true;
-    // Match if pathname starts with the config path followed by a slash
-    // This handles cases like /shopping/mobiles/206 matching /shopping/mobiles
-    return location.pathname.startsWith(path + '/');
+    
+    // Check if pathname starts with the config path followed by a slash
+    if (!location.pathname.startsWith(path + '/')) return false;
+    
+    // Only mark as active if there's no longer path that also matches
+    // This ensures only the most specific (deepest) matching path is active
+    const hasLongerMatch = Object.values(headerConfig).some(config => {
+      const otherPath = config.path;
+      // Skip the current path
+      if (otherPath === path) return false;
+      // Check if there's a longer path that also matches
+      return otherPath.length > path.length && 
+             (location.pathname === otherPath || location.pathname.startsWith(otherPath + '/'));
+    });
+    
+    return !hasLongerMatch;
   };
 
   return (

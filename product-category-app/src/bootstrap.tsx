@@ -9,6 +9,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <BrowserRouter>
       <Routes>
         <Route path="/shopping/:category" element={<ProductCategory />} />
+        <Route path="/shopping/:category/:subCategory" element={<ProductCategory />} />
         <Route path="/shopping/:category/:productId" element={<ProductDetail />} />
         <Route path="*" element={<ProductCategory />} />
       </Routes>

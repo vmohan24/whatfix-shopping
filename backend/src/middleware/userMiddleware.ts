@@ -16,7 +16,7 @@ declare global {
  * Also logs the userId for debugging/monitoring purposes
  */
 export const userMiddleware = (req: Request, res: Response, next: NextFunction): void => {
-  const userId = req.headers['userId'] as string | undefined;
+  const userId = req.headers['userid'] as string | undefined;
   
   if (userId) {
     req.userId = userId;
